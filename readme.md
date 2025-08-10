@@ -16,7 +16,7 @@ This application is a versatile AI-powered platform designed to streamline the c
 This application is primarily a web-based service, requiring no local installation for general use.
 
 **Access the Application:**
-[SOCIAL ASSISTANT](https://your-app-url.com](https://useme-free.github.io/socialassistant/)
+[SOCIAL ASSISTANT](https://your-app-url.com](https://useme-free.github.io/socialassistant/))
 
 
 
