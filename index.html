@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Assistant AI</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Feather Icons for vector icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Custom CSS for animations and fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Make the body full screen and use flexbox for centering */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Custom animation for the copy feedback message */
+        .copy-feedback {
+            animation: fadeOut 2s forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        /* Style the textarea to match the app's theme */
+        .output-textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4 font-sans">
+
+    <div class="bg-gray-800 p-8 md:p-12 rounded-2xl shadow-2xl w-full h-full overflow-y-auto space-y-8">
+        <!-- Header Section -->
+        <div class="text-center">
+            <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">
+                <i data-feather="sparkles" class="inline-block mr-2 text-3xl h-8 w-8 stroke-2"></i>
+                Social Assistant AI
+            </h1>
+            <p class="mt-2 text-gray-400 text-lg">
+                Generate hashtags, tags, descriptions, and readmes etc..with me.
+            </p>
+        </div>
+
+        <!-- Content Type Selection buttons -->
+        <div class="flex flex-wrap justify-center space-x-2 space-y-2 md:space-y-0" id="type-container">
+            <button id="hashtag-btn" data-type="hashtag" class="flex-1 py-3 px-6 rounded-full text-lg font-semibold transition-all duration-300 bg-gray-700 text-gray-300 hover:bg-gray-600">
+                Hashtags
+            </button>
+            <button id="tag-btn" data-type="tag" class="flex-1 py-3 px-6 rounded-full text-lg font-semibold transition-all duration-300 bg-gray-700 text-gray-300 hover:bg-gray-600">
+                Tags
+            </button>
+            <button id="description-btn" data-type="description" class="flex-1 py-3 px-6 rounded-full text-lg font-semibold transition-all duration-300 bg-gray-700 text-gray-300 hover:bg-gray-600">
+                Description
+            </button>
+            <button id="readme-btn" data-type="readme" class="flex-1 py-3 px-6 rounded-full text-lg font-semibold transition-all duration-300 bg-gray-700 text-gray-300 hover:bg-gray-600">
+                Readme.md
+            </button>
+        </div>
+
+        <!-- Input field and Generate/Clear buttons -->
+        <div class="space-y-4">
+            <input type="text" id="topic-input" placeholder="e.g., 'how to make sourdough bread'" class="w-full p-4 text-lg bg-gray-700 text-white placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all">
+
+            <!-- Description Type Selection, hidden by default -->
+            <div id="description-type-container" class="hidden flex flex-col items-center space-y-4">
+                <p class="text-gray-400 text-lg">Select content type:</p>
+                <div class="flex justify-center space-x-4">
+                    <label class="flex items-center text-lg text-gray-300 cursor-pointer">
+                        <input type="radio" name="description_type" value="video" class="form-radio h-5 w-5 text-teal-600 bg-gray-700 border-gray-600 focus:ring-teal-500" checked>
+                        <span class="ml-2">Video</span>
+                    </label>
+                    <label class="flex items-center text-lg text-gray-300 cursor-pointer">
+                        <input type="radio" name="description_type" value="live stream" class="form-radio h-5 w-5 text-teal-600 bg-gray-700 border-gray-600 focus:ring-teal-500">
+                        <span class="ml-2">Live Stream</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- New - Tone of Voice Selection, hidden by default -->
+            <div id="tone-container" class="hidden flex flex-col items-center space-y-4">
+                <p class="text-gray-400 text-lg">Select tone:</p>
+                <div class="flex flex-wrap justify-center space-x-2 md:space-x-4">
+                    <label class="flex items-center text-lg text-gray-300 cursor-pointer">
+                        <input type="radio" name="tone" value="professional" class="form-radio h-5 w-5 text-teal-600 bg-gray-700 border-gray-600 focus:ring-teal-500" checked>
+                        <span class="ml-2">Professional</span>
+                    </label>
+                    <label class="flex items-center text-lg text-gray-300 cursor-pointer">
+                        <input type="radio" name="tone" value="casual" class="form-radio h-5 w-5 text-teal-600 bg-gray-700 border-gray-600 focus:ring-teal-500">
+                        <span class="ml-2">Casual</span>
+                    </label>
+                    <label class="flex items-center text-lg text-gray-300 cursor-pointer">
+                        <input type="radio" name="tone" value="funny" class="form-radio h-5 w-5 text-teal-600 bg-gray-700 border-gray-600 focus:ring-teal-500">
+                        <span class="ml-2">Funny</span>
+                    </label>
+                    <label class="flex items-center text-lg text-gray-300 cursor-pointer">
+                        <input type="radio" name="tone" value="enthusiastic" class="form-radio h-5 w-5 text-teal-600 bg-gray-700 border-gray-600 focus:ring-teal-500">
+                        <span class="ml-2">Enthusiastic</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- New - Output Length Selection, hidden by default -->
+            <div id="length-container" class="hidden flex flex-col items-center space-y-4">
+                <p class="text-gray-400 text-lg">Select length:</p>
+                <div class="flex justify-center space-x-4">
+                    <label class="flex items-center text-lg text-gray-300 cursor-pointer">
+                        <input type="radio" name="length" value="short" class="form-radio h-5 w-5 text-teal-600 bg-gray-700 border-gray-600 focus:ring-teal-500">
+                        <span class="ml-2">Short</span>
+                    </label>
+                    <label class="flex items-center text-lg text-gray-300 cursor-pointer">
+                        <input type="radio" name="length" value="medium" class="form-radio h-5 w-5 text-teal-600 bg-gray-700 border-gray-600 focus:ring-teal-500" checked>
+                        <span class="ml-2">Medium</span>
+                    </label>
+                    <label class="flex items-center text-lg text-gray-300 cursor-pointer">
+                        <input type="radio" name="length" value="long" class="form-radio h-5 w-5 text-teal-600 bg-gray-700 border-gray-600 focus:ring-teal-500">
+                        <span class="ml-2">Long</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex space-x-4">
+                <button id="generate-btn" class="flex-1 py-4 text-lg font-bold bg-gradient-to-r from-teal-400 to-blue-500 text-white rounded-xl shadow-lg hover:from-teal-500 hover:to-blue-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                    Generate
+                </button>
+                <button id="clear-btn" class="py-4 px-6 text-lg font-bold bg-gray-700 text-gray-300 rounded-xl shadow-lg hover:bg-gray-600 transition-colors transform hover:scale-105">
+                    Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- Generated Output & Error Message containers -->
+        <div id="error-message" class="hidden bg-red-900 p-4 rounded-xl text-red-300 text-center"></div>
+        
+        <div id="output-container" class="hidden bg-gray-700 p-6 rounded-2xl shadow-inner relative">
+            <h3 class="text-xl font-semibold mb-3 text-gray-300" id="output-title"></h3>
+            <!-- Tags will be rendered here -->
+            <div id="tags-list" class="flex flex-wrap gap-2 mb-4"></div>
+            <!-- Description/Readme will be rendered in this textarea -->
+            <textarea id="long-content-output" class="hidden output-textarea w-full p-4 text-lg bg-gray-900 text-white placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all read-only" readonly></textarea>
+            
+            <!-- Copy Button -->
+            <button id="copy-btn" class="w-full flex items-center justify-center py-3 px-6 text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-xl transition-colors">
+                <i data-feather="copy" class="mr-2 text-base h-4 w-4 stroke-2"></i>
+                Copy All
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Use a DOMContentLoaded event listener to ensure all HTML elements are loaded before running the script
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Feather Icons for dynamic icon replacement
+            feather.replace();
+
+            // Store references to all the necessary DOM elements
+            const topicInput = document.getElementById('topic-input');
+            const typeButtons = document.querySelectorAll('#type-container button');
+            const descriptionTypeContainer = document.getElementById('description-type-container');
+            const toneContainer = document.getElementById('tone-container');
+            const lengthContainer = document.getElementById('length-container');
+            const generateBtn = document.getElementById('generate-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const outputContainer = document.getElementById('output-container');
+            const outputTitle = document.getElementById('output-title');
+            const tagsList = document.getElementById('tags-list');
+            const longContentOutput = document.getElementById('long-content-output');
+            const copyBtn = document.getElementById('copy-btn');
+            const errorMessage = document.getElementById('error-message');
+
+            // State variables to manage application state
+            let contentType = 'hashtag';
+            let isLoading = false;
+
+            // Function to handle content type button selection and update UI dynamically
+            const setContentType = (type) => {
+                contentType = type;
+                typeButtons.forEach(btn => {
+                    if (btn.dataset.type === type) {
+                        btn.classList.remove('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
+                        btn.classList.add('bg-gradient-to-r', 'from-teal-500', 'to-blue-600', 'text-white', 'shadow-lg');
+                    } else {
+                        btn.classList.remove('bg-gradient-to-r', 'from-teal-500', 'to-blue-600', 'text-white', 'shadow-lg');
+                        btn.classList.add('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
+                    }
+                });
+
+                // Update placeholder and show/hide extra options based on content type
+                if (type === 'description') {
+                    descriptionTypeContainer.classList.remove('hidden');
+                    toneContainer.classList.remove('hidden');
+                    lengthContainer.classList.remove('hidden');
+                    topicInput.placeholder = "e.g., 'Make an easy sourdough bread'";
+                } else if (type === 'readme') {
+                    descriptionTypeContainer.classList.add('hidden');
+                    toneContainer.classList.remove('hidden');
+                    lengthContainer.classList.add('hidden');
+                    topicInput.placeholder = "e.g., 'A simple to-do list application'";
+                } else {
+                    descriptionTypeContainer.classList.add('hidden');
+                    toneContainer.classList.add('hidden');
+                    lengthContainer.classList.add('hidden');
+                    topicInput.placeholder = "e.g., 'how to make sourdough bread'";
+                }
+            };
+            
+            // Function to display an error message in a dedicated area
+            const displayError = (message) => {
+                errorMessage.textContent = message;
+                errorMessage.classList.remove('hidden');
+                outputContainer.classList.add('hidden');
+            };
+
+            // Function to hide the error message
+            const hideError = () => {
+                errorMessage.classList.add('hidden');
+            };
+
+            // Function to update the loading state of the generate button
+            const setLoading = (state) => {
+                isLoading = state;
+                generateBtn.disabled = state;
+                if (state) {
+                    generateBtn.innerHTML = `<i data-feather="loader" class="animate-spin mr-2 h-6 w-6 stroke-2"></i> Generating...`;
+                } else {
+                    generateBtn.innerHTML = 'Generate';
+                }
+                // Re-render icons after changing innerHTML
+                feather.replace(); 
+            };
+
+            // Function to clear all input and output fields
+            const handleClear = () => {
+                topicInput.value = '';
+                tagsList.innerHTML = '';
+                longContentOutput.value = '';
+                outputContainer.classList.add('hidden');
+                hideError();
+                // Reset to default selection
+                setContentType('hashtag');
+            };
+
+            // Function to handle copying content to the clipboard
+            const handleCopy = () => {
+                let textToCopy;
+                if (contentType === 'description' || contentType === 'readme') {
+                    textToCopy = longContentOutput.value;
+                } else {
+                    const tags = Array.from(tagsList.children).map(tagEl => tagEl.textContent.trim());
+                    textToCopy = tags.join(' ');
+                }
+                
+                // Create a temporary textarea to hold the text for copying
+                const textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                
+                try {
+                    // Use document.execCommand('copy') for better iframe compatibility
+                    document.execCommand('copy');
+                    
+                    // Create and show a custom feedback message to the user
+                    const feedbackEl = document.createElement('div');
+                    feedbackEl.textContent = `${contentType === 'readme' ? 'README' : contentType === 'description' ? 'Description' : 'Tags'} copied!`;
+                    feedbackEl.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 p-4 rounded-xl bg-green-600 text-white shadow-lg copy-feedback';
+                    document.body.appendChild(feedbackEl);
+                    
+                    // Remove the feedback message after the animation completes
+                    setTimeout(() => {
+                        feedbackEl.remove();
+                    }, 2000);
+                    
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                } finally {
+                    // Clean up the temporary textarea
+                    document.body.removeChild(textarea);
+                }
+            };
+
+            // Main function to generate content using the Gemini API
+            const generateContent = async () => {
+                const topic = topicInput.value.trim();
+                if (!topic) {
+                    displayError('Please enter a topic.');
+                    return;
+                }
+
+                setLoading(true);
+                hideError();
+
+                let prompt;
+                if (contentType === 'description') {
+                    const descriptionType = document.querySelector('input[name="description_type"]:checked').value;
+                    const selectedTone = document.querySelector('input[name="tone"]:checked').value;
+                    const selectedLength = document.querySelector('input[name="length"]:checked').value;
+                    let lengthWords = 200;
+                    if (selectedLength === 'short') lengthWords = 100;
+                    if (selectedLength === 'long') lengthWords = 400;
+
+                    prompt = `Write a ${selectedLength} and compelling YouTube ${descriptionType} description in a ${selectedTone} tone for a video titled "${topic}". The description should be engaging, about ${lengthWords} words, and include a call to action. Do not include any titles or headings in the response, only the description text.`;
+                } else if (contentType === 'readme') {
+                    const selectedTone = document.querySelector('input[name="tone"]:checked').value;
+                    prompt = `Generate a complete and professional README.md file in a ${selectedTone} tone for a project titled "${topic}". The readme should include the following sections: "Project Title", "Description", "Features", "Installation", and "Usage". Do not include any introductory sentences or conversational text before the README content.`;
+                } else {
+                    // Hashtag or Tag generation
+                    prompt = `Act as a social media expert. Generate a list of 10-15 highly relevant and trending ${contentType === 'hashtag' ? 'hashtags' : 'tags'} for a video or post about "${topic}". The tags should be popular and designed to increase reach and visibility on platforms like YouTube, Instagram, and TikTok. Provide only the ${contentType === 'hashtag' ? 'hashtags' : 'tags'} separated by spaces, without any additional text or descriptions. Do not include the '#' symbol in the output.`;
+                }
+
+                try {
+                    // Prepare the API request payload
+                    const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                    const payload = { contents: chatHistory };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                    let response;
+                    let retries = 0;
+                    const maxRetries = 5;
+                    const baseDelay = 1000; // 1 second for exponential backoff
+
+                    // Implement exponential backoff for API calls
+                    while (retries < maxRetries) {
+                        try {
+                            response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+
+                            if (response.status === 429) { // Too many requests
+                                retries++;
+                                const delay = baseDelay * Math.pow(2, retries - 1);
+                                await new Promise(resolve => setTimeout(resolve, delay));
+                                continue;
+                            }
+
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            break; // Success, exit the loop
+
+                        } catch (err) {
+                            displayError(`API call failed: ${err.message}`);
+                            setLoading(false);
+                            return;
+                        }
+                    }
+
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'No content was generated.';
+                    
+                    // Clear previous content and render the new content
+                    tagsList.innerHTML = '';
+                    longContentOutput.classList.add('hidden');
+
+                    if (contentType === 'description' || contentType === 'readme') {
+                        longContentOutput.value = text;
+                        longContentOutput.classList.remove('hidden');
+                    } else {
+                        // Process the AI response to get a clean array of tags
+                        const tagsArray = text.split(/\s+/).filter(tag => tag.length > 1);
+                        tagsArray.forEach(tag => {
+                            const tagEl = document.createElement('span');
+                            tagEl.className = 'bg-gray-900 text-teal-300 text-sm font-medium px-4 py-2 rounded-full cursor-pointer hover:bg-gray-600 transition-colors';
+                            // Remove any leading # symbol from the tag
+                            tagEl.textContent = tag.replace('#', '');
+                            tagsList.appendChild(tagEl);
+                        });
+                    }
+
+                    // Update the display title and show the output container
+                    outputTitle.textContent = `Generated ${contentType === 'hashtag' ? 'Hashtags' : contentType === 'tag' ? 'Tags' : contentType === 'readme' ? 'README.md' : 'Description'}`;
+                    outputContainer.classList.remove('hidden');
+
+                } catch (err) {
+                    displayError('An error occurred while generating content. Please try again.');
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // Add all event listeners
+            typeButtons.forEach(button => {
+                button.addEventListener('click', () => setContentType(button.dataset.type));
+            });
+            generateBtn.addEventListener('click', generateContent);
+            clearBtn.addEventListener('click', handleClear);
+            topicInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    generateContent();
+                }
+            });
+            copyBtn.addEventListener('click', handleCopy);
+            
+            // Set initial state
+            setContentType('hashtag');
+        });
+    </script>
+</body>
+</html>
